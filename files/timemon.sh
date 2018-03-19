@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 # Author: @jerryibrahim  
 
 # Version 1.0.0
@@ -33,6 +33,7 @@ fInitizalize () {
 	fEcho "Monitoring Initialization..."
 	fEcho "Program Arguments: "$1
 	fEcho "Log Directory="$LOGDIR
+	fEcho "PATH=$PATH"
 
 	# Check to make sure LOGDIR is defined
 	if [ x"$LOGDIR" = x ] ; then
@@ -87,6 +88,7 @@ fTimeLatency () {
 	__REMOTEHOSTIP=""
 	__PING=""
 	__LATENCY=""
+	__NTP=""
 	__DRIFT=""
 
 	if [ x"$__REMOTEHOST" = x ] ; then
@@ -102,16 +104,19 @@ fTimeLatency () {
 	fi
 	fEcho "Latency (ms): $__LATENCY"
 
-	__REMOTEHOSTIP=`echo ${__PING} | head -n 1 | awk '{print $3}'`
+	__REMOTEHOSTIP=`echo ${__PING} | head -n 1 | awk '{print $3}' | cut -d '(' -f 2 | cut -d ')' -f 1`
 	if [ x"$__REMOTEHOSTIP" = x ] ; then
-		__LATENCY="UNKNOWN"
+		__REMOTEHOSTIP="UNKNOWN"
 	fi
 	fEcho "HOST IP: $__REMOTEHOSTIP"
 
-	__DRIFT=`ntpdate -q "$__REMOTEHOST" | tail -1 | awk '{print $10}'`
+
+	__NTP=`/usr/sbin/ntpdate -q "$__REMOTEHOST"`
+	__DRIFT=`echo ${__NTP} | tail -1 | awk '{print $10}'`
 	if [ x"$__DRIFT" = x ] ; then
 		__DRIFT="UNKNOWN"
 	fi
+	fEcho "NTP: $__NTP"
 	fEcho "TIME DRIFT: $__DRIFT"
 
 
